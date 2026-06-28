@@ -109,14 +109,6 @@ var currentNamaWilayah = 'Semua Wilayah'; // Penampung nama daerah
 
 function tentukanKategoriKueri(inputTxt) {
   let teks = inputTxt.toUpperCase(); 
-
-  // Publikasi & Fiksi
-  if (teks.includes('Q47461344') && teks.includes('Q7725634')) return 'publikasi';
-  if (teks.includes('Q7725634') && !teks.includes('Q47461344')) return 'fiksi'; 
-  
-  if (/\bQ5\b/.test(teks)) return 'tokoh';
-  if (teks.includes('Q11032') || teks.includes('Q41298')) return 'pers';
-  if (/\bQ7944\b/.test(teks)) return 'peristiwa'; // Gempa bumi
   
   // Kategori Alam (Semua ini akan mematikan fitur "Didirikan")
 const kelompokAlam = [
@@ -160,6 +152,7 @@ function dapatkanNamaKlaster(inputTxt) {
   if (cek(['Q87167'])) return 'Naskah';
   if (cek(['Q11032', 'Q41298'])) return 'Media massa';
   if (cek(['Q7944'])) return 'Gempa bumi';
+  if (cek(['Q8065', 'Q3839081', 'Q1190554'])) return 'Peristiwa';
 
   // Kategori Alam / Kebudayaan Non-Bangunan
   if (cek(['Q34770'])) return 'Bahasa';
