@@ -208,7 +208,7 @@ if (klaster === 'Wilayah Administratif') {
     whereClause += `
       OPTIONAL {
         ?site p:P1436 ?koleksiStmt .
-        ?koleksiStmt psn:P1436 ?koleksiNode .
+        ?koleksiStmt psv:P1436 ?koleksiNode .
         ?koleksiNode wikibase:quantityAmount ?koleksiVal .
         OPTIONAL { 
           ?koleksiNode wikibase:quantityUnit ?koleksiUnitItem . 
