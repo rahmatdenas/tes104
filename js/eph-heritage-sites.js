@@ -408,45 +408,6 @@ function populateProvinceTypesData() {
   return eksekusiKueriKeWikidata(dynamicQuery);
 }
 
-  function eksekusiKueriKeWikidata(kueriFinal) {
-    console.log("Kueri yang dikirim:", kueriFinal);
-    return queryWdqsPaginated(
-      kueriFinal,
-      function(result) {
-      // Menggunakan variabel JSON singkatan hasil kueri baru
-      let qid = result.SQ.value;
-      if (!(qid in Records)) Records[qid] = new Record(false);
-      let record = Records[qid];
-  record.id = qid;
-
-      record.title = ('sLabel' in result && result.sLabel.value) ? result.sLabel.value : '[ERROR: No title]';
-
-      let provQid = result.PQ ? result.PQ.value : 'Q_UNKNOWN';
-      let provLabel = result.pLabel ? result.pLabel.value : 'Tidak dalam Provinsi';
-
-      if (!(provQid in ProvinceIndex)) {
-        ProvinceIndex[provQid] = new ProvinceIndexEntry();
-        ProvinceIndex[provQid].name = provLabel; 
-      }
-      if (!(provQid in record.designations)) record.designations[provQid] = provLabel; 
-      
-      record.areaTags.add(provQid);
-      
-      if ('lLabel' in result && result.lLabel.value) record.lokasiSpesifik = result.lLabel.value;
-      
-      if (!record.tahunBerdiri && result.tM && result.tM.value) {
-        let precision = result.tP ? result.tP.value : 9;
-        record.tahunBerdiri = formatWikidataDate(result.tM.value, precision);        
-        record.rawTahunBerdiri = result.tM.value.replace(/^[+-]/, '');
-      }
-    },
-    function() {
-      populateProvinceIndex(); 
-      Object.values(Records).forEach(record => { record.indexTitle = record.title });
-    },
-    5000  // ukuran halaman
-  );
-}
 function populateCoordinatesData() {
   let daftarQid = Object.keys(Records).map(id => 'wd:' + id);
   if (daftarQid.length === 0) return Promise.resolve();
