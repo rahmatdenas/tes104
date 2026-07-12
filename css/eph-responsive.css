@@ -161,7 +161,7 @@
   box-sizing: border-box;
 }
    
-.mode-tokoh #details figure.gambar-utama {
+#details .mode-tokoh figure.gambar-utama {
   margin: 0 0 7px 10px;
   width: 150px;
 }
