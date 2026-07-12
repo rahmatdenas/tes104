@@ -680,7 +680,7 @@ if (record.dynamicProps && Object.keys(record.dynamicProps).length > 0) {
       // CEGAT TIPELIST (P31) UNTUK HEADER H2
     if (record.dynamicProps.tipeList) {
       // Cari elemen span header berdasarkan QID
-      let headerTextElem = document.getElementById(`header-text-${qid}`);
+let headerTextElem = record.panelElem.querySelector(`#header-text-${qid}`);
       
       // Jika elemen ditemukan (jendela belum ditutup), timpa teksnya
       if (headerTextElem && record.dynamicProps.tipeList.trim() !== '') {
