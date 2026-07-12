@@ -814,7 +814,7 @@ function populateMapAndIndex() {
         [record.lat, record.lon],
         { icon: L.ExtraMarkers.icon({ icon: '', markerColor : 'orange-dark' }) }
       );
-rrecord.mapMarker = mapMarker;
+record.mapMarker = mapMarker;
       
       mapMarker.bindPopup(record.title, { 
         closeButton: false,
