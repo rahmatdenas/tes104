@@ -116,7 +116,7 @@ loadingTimeoutToken = setTimeout(() => {
       
       // Pastikan statusnya memang masih mencari data (isFetching = true)
       if (loadingDesc && isFetching) {
-        loadingDesc.innerHTML = `Data yang ditarik mencapai ribuan. Harap menunggu, proses ini bisa memakan waktu 3-5 menit...`;
+        loadingDesc.innerHTML = `Data yang ditarik mencapai ribuan. Estimasi proses penarikan data 3-5 menit...`;
       }
     }, 5000); // Set 5000 (5 detik)
     // =========================================================
@@ -422,7 +422,7 @@ async function fetchWdqsRawWithRetry(query, maxRetry = 3) {
       // Mengubah teks loading menjadi pesan error sementara
       let progressText = document.querySelector('#index-list p');
       if (progressText) {
-        progressText.innerHTML = `<span style="color:#cc0000; font-weight:bold;">Percobaan ${attempt}/${maxRetry} gagal. Jeda sejenak...</span>`;
+        progressText.innerHTML = `<span style="color:#cc0000; font-weight:bold;">Percobaan ${attempt}/${maxRetry} gagal. Melakukan penarikan ulang.</span>`;
       }
 
       if (attempt === maxRetry) throw error;
