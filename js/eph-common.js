@@ -88,6 +88,11 @@ function setupLandingForm() {
 
 function resetApp() {
   currentSearchToken = 0;
+
+  if (loadingTimeoutToken) {
+    clearTimeout(loadingTimeoutToken);
+    loadingTimeoutToken = null;
+  }
   
   // 1. Bunuh Koneksi yang Sedang Berjalan
   if (activeXhrs.length > 0) {
