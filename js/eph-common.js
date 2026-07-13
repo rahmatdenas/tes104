@@ -165,7 +165,7 @@ function resetApp() {
   BootstrapDataIsLoaded = false;
   PrimaryDataIsLoaded = false;
   isFetching = false; 
-  
+  currentDisplayedQid = null;
   currentFilteredRecords = [];
   currentRenderIndex = 0;
 
