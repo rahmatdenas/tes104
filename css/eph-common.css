@@ -140,7 +140,7 @@ nav li.active > a, nav li > a.active {
 
 #submenu-atas li a:hover, nav li:hover {
     background: #611;
-   color: #fff
+   color: #fff;
 }
 
 /* Mengunci warna tombol navigasi agar tidak kembali ke hitam bawaan browser */
