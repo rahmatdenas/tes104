@@ -247,13 +247,12 @@ function updateLabel(expanded) {
     panel.addEventListener('touchend', onTouchEnd);
     panel.addEventListener('touchcancel', onTouchEnd);
 
-    window.addEventListener('click', function(e) {
-      if (preventNextClick) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    }, true); 
-
+window.addEventListener('click', function(e) {
+  if (preventNextClick && panel.contains(e.target)) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+}, true);
         document.addEventListener('focusin', function(e) {
       if (preventNextClick && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
         e.target.blur();
