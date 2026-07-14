@@ -193,7 +193,7 @@ padding: 18px 20px;
 /* ANIMASI BISA DIHAPU SAJA */
 @keyframes slideNaik {
   0% {
-    transform: translateX(-150px); 
+    transform: translateX(-300px); 
   }
   100% {
     transform: translateX(0);    
