@@ -184,11 +184,38 @@ nav li.active > a, nav li > a.active {
   padding: 10px 20px 10px 20px;
 }
 
-
 #submenu-atas li a:hover {
     background: #611;
    color: #fff;
 }
+
+/* ANIMASI BISA DIHAPU SAJA */
+@keyframes slideNaik {
+  0% {
+    transform: translateX(-150px); 
+  }
+  100% {
+    transform: translateX(0);    
+  }
+}
+.kelas-submenu-mu  li {
+    background: rgb(136, 34, 34)
+}
+/* 1. Pengaturan dasar untuk semua <li> */
+.kelas-submenu-mu li {
+  /* KUNCI: Ubah 'forwards' menjadi 'both' agar elemen bersembunyi saat menunggu delay */
+  animation: slideNaik 0.2s ease-out both;
+  will-change: transform, opacity; 
+}
+.kelas-submenu-mu li:nth-child(1) { animation-delay: 0.0s; }
+/* Anak ke-2 telat 0.1 detik */
+.kelas-submenu-mu li:nth-child(2) { animation-delay: 0.1s; }
+/* Anak ke-3 telat 0.2 detik */
+.kelas-submenu-mu li:nth-child(3) { animation-delay: 0.2s; }
+/* Anak ke-4 telat 0.3 detik */
+.kelas-submenu-mu li:nth-child(4) { animation-delay: 0.3s; }
+/* Anak ke-5 telat 0.4 detik */
+.kelas-submenu-mu li:nth-child(5) { animation-delay: 0.4s; }
 
 /* Mengunci warna tombol navigasi agar tidak kembali ke hitam bawaan browser */
 #nav-detail a, 
