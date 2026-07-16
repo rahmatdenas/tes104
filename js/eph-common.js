@@ -459,36 +459,32 @@ function fetchWdqsRaw(query) {
   });
 }
 
-async function fetchWdqsRawWithRetry(query, maxRetry = 3) {
+async function fetchWdqsRawWithRetry(query, maxRetry = 3, offsetLabel = '') {
   for (let attempt = 1; attempt <= maxRetry; attempt++) {
     try {
-      // =========================================================
-      // +++ PERBAIKAN UX: LAPORKAN SEBELUM MENCOBA ULANG +++
-      // =========================================================
       if (attempt > 1) {
         let progressText = document.querySelector('#index-list p');
         if (progressText) {
-          // Kembalikan ke teks aslinya khusus untuk percobaan ulang
-          progressText.innerHTML = `Sedang melakukan percobaan ulang (${attempt}/${maxRetry})...`;
+          progressText.innerHTML = `Sedang melakukan percobaan ulang${offsetLabel} (${attempt}/${maxRetry})...`;
         }
       }
-
-      return await fetchWdqsRaw(query);
+      let result = await fetchWdqsRaw(query);
+      if (attempt > 1) {
+        console.log(`[${offsetLabel}] Berhasil setelah percobaan ke-${attempt}`);
+      }
+      return result;
 
     } catch (error) {
       if (error === 'ABORTED') throw error; 
       
-      console.warn(`Percobaan ${attempt}/${maxRetry} gagal (${error}), mencoba lagi...`);
+      console.warn(`[${offsetLabel}] Percobaan ${attempt}/${maxRetry} gagal (${error}), mencoba lagi...`);
       
-      // Mengubah teks loading menjadi pesan error sementara
       let progressText = document.querySelector('#index-list p');
       if (progressText) {
-        progressText.innerHTML = `<span style="color:#cc0000; font-weight:bold;">Percobaan ${attempt}/${maxRetry} gagal. Melakukan penarikan ulang.</span>`;
+        progressText.innerHTML = `<span style="color:#cc0000; font-weight:bold;">Percobaan ${attempt}/${maxRetry} gagal${offsetLabel}. Melakukan penarikan ulang.</span>`;
       }
 
       if (attempt === maxRetry) throw error;
-      
-      // Jeda sebelum percobaan berikutnya
       await new Promise(r => setTimeout(r, 1500 * attempt)); 
     }
   }
@@ -537,16 +533,13 @@ async function queryWdqsPaginated(queryTemplate, processEachResult, postprocessC
       console.log(`[Halaman ${halaman}] Kombinasi (s,p,l) unik:`, kombinasiUnik);
 
       // Cek apakah ini halaman terakhir atau bukan untuk menentukan teks yang pas
-      if (kombinasiUnik < chunkSize) {
-         if (progressText) {
-           progressText.textContent = `Total ${totalDataTerkumpul} data ditarik. Data segera ditampilkan...`;
-         }
-         break; // Loop berhenti secara normal
-      } else {
-         if (progressText) {
-           progressText.textContent = `Selesai menarik ${totalDataTerkumpul} data. Penarikan data masih berlangsung...`;
-         }
-      }
+if (kombinasiUnik < chunkSize) {
+   break; // Loop berhenti secara normal, tanpa update teks
+} else {
+   if (progressText) {
+     progressText.textContent = `Selesai menarik ${totalDataTerkumpul} data. Penarikan data masih berlangsung...`;
+   }
+}
 
       offset += chunkSize;
       halaman++;
