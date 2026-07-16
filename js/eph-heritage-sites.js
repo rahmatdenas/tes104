@@ -487,98 +487,126 @@ function populateProvinceTypesData() {
   return eksekusiKueriKeWikidata(dynamicQuery);
 }
 
-function populateCoordinatesData() {
+async function populateCoordinatesData() {
   let daftarQid = Object.keys(Records).map(id => 'wd:' + id);
-  if (daftarQid.length === 0) return Promise.resolve();
+  if (daftarQid.length === 0) return;
 
-  // Ambil nama klaster untuk menentukan jalurnya
   let inputTxt = document.getElementById('jenis-input').value.trim();
   let namaKlaster = dapatkanNamaKlaster(inputTxt);
-  
   let templateKueri = KUMPULAN_KUERI_1['universal'];
-  
-  // 1. Ambil P-ID menggunakan fungsi yang sudah kita buat sebelumnya
-  let propLokasi = dapatkanPropertiWikidata(namaKlaster); 
-  
-  // 2. Daftarkan klaster apa saja yang TIDAK PUNYA koordinat langsung (Cek lagi Lukisan Lontar dan Naskah?)
+  let propLokasi = dapatkanPropertiWikidata(namaKlaster);
+
   const klasterTanpaKoordinatLangsung = [
     'Hidangan', 'Pakaian', 'Tari dan pertunjukan', 'Ritual dan upacara',  'Artefak',
     'Budaya rakyat', 'Lukisan', 'Lontar', 'Naskah', 'Perang & konflik',
     'Tokoh', 'Bahasa', 'Publikasi', 'Media massa', 'Latar karya sastra'
   ];
 
-  let klausaKoordinat = '';
-
-// 3. Logika percabangan yang baru
-  if (!klasterTanpaKoordinatLangsung.includes(namaKlaster)) {
-    // Jika BANGUNAN atau ALAM FISIK (Gunung, Pantai), cari koordinat langsung (P625)
-    klausaKoordinat = `?site p:P625 ?coordStatement .`;
-  } else {
-    // Jika BUDAYA, TOKOH, atau BENDA BERGERAK, cari lokasinya dulu, baru ambil koordinatnya
-    klausaKoordinat = `
-    ?site wdt:${propLokasi} ?p131Lokasi .
-    
-    # KUNCI PERBAIKAN: Kecualikan Indonesia (Q252) agar tidak mengambil koordinat tengah laut/negara
-    FILTER(?p131Lokasi != wd:Q252) 
-    
-    ?p131Lokasi p:P625 ?coordStatement .`;
-  }
+  let klausaKoordinat = !klasterTanpaKoordinatLangsung.includes(namaKlaster) 
+    ? `?site p:P625 ?coordStatement .` 
+    : `?site wdt:${propLokasi} ?p131Lokasi . FILTER(?p131Lokasi != wd:Q252) ?p131Lokasi p:P625 ?coordStatement .`;
 
   let kelompokCicilan = potongJadiKelompok(daftarQid, 1000);
+  
+  // STRATEGI 1: Tembak 4 kueri (4.000 data) sekaligus
+  let batchSize = 4; 
 
-  let daftarJanji = kelompokCicilan.map(cicilan => {
-    let teksQids = cicilan.join(' ');
-    let kueriFinal = templateKueri
-      .replace(/<PLACEHOLDER_QIDS>/g, teksQids)
-      .replace(/<PLACEHOLDER_KLAUSA_KOORDINAT>/g, klausaKoordinat);
+  for (let i = 0; i < kelompokCicilan.length; i += batchSize) {
+    let potonganBatch = kelompokCicilan.slice(i, i + batchSize);
+    
+    // Teks Loading Progresif
+    let progressText = document.querySelector('#index-list p');
+    if (progressText) {
+      let persentase = Math.round((i / kelompokCicilan.length) * 100);
+      progressText.innerHTML = `Membangun peta koordinat... (${persentase}%)`;
+    }
 
-    return queryWdqsThenProcess(
-      kueriFinal,
-      function(result) {
+    // Eksekusi 4 peluru bersamaan
+    let daftarJanji = potonganBatch.map(cicilan => {
+      let kueriFinal = templateKueri
+        .replace(/<PLACEHOLDER_QIDS>/g, cicilan.join(' '))
+        .replace(/<PLACEHOLDER_KLAUSA_KOORDINAT>/g, klausaKoordinat);
+
+      return queryWdqsThenProcess(kueriFinal, function(result) {
         let record = Records[result.siteQid.value];
         if (!record) return; 
-
         let wktBits = result.coord.value.split(/\(|\)| /);
         record.lat = parseFloat(wktBits[2]);
         record.lon = parseFloat(wktBits[1]);
-      }
-    );
-  });
+      });
+    });
 
-  return Promise.all(daftarJanji).then(function() {
-    BootstrapDataIsLoaded = true;
-  });
+    try {
+      await Promise.all(daftarJanji);
+    } catch (error) {
+      if (error === 'ABORTED') throw error;
+      console.warn("Gagal tarik sebagian koordinat, lanjut ke batch berikutnya...", error);
+    }
+  }
+
+  BootstrapDataIsLoaded = true;
 }
 
-function populateImageAndWikipediaData() {
+async function populateImageAndWikipediaData() {
   let daftarQid = Object.keys(Records).map(id => 'wd:' + id);
-  if (daftarQid.length === 0) return Promise.resolve();
+  if (daftarQid.length === 0) return;
 
   let kelompokCicilan = potongJadiKelompok(daftarQid, 1000);
+  
+  let btnImg = document.getElementById('btn-image') || document.querySelector('[data-filter="image"]');
+  let btnArt = document.getElementById('btn-article') || document.querySelector('[data-filter="article"]');
+  let tiketPencarianIni = currentSearchToken;
 
-  let daftarJanji = kelompokCicilan.map(cicilan => {
-    let teksQids = cicilan.join(' ');
-    let kueriFinal = SPARQL_QUERY_3_TEMPLATE.replace('<PLACEHOLDER_QIDS>', teksQids);
+  for (let i = 0; i < kelompokCicilan.length; i++) {
+    // Berhenti jika pengguna klik tombol "Mulai" lagi (pencarian baru)
+    if (currentSearchToken !== tiketPencarianIni) break; 
 
-    return queryWdqsThenProcess(
-      kueriFinal,
-      function(result) {
+    // MATIKAN TOMBOL SESAAT (Sesuai ide Anda)
+    if (btnImg && !btnImg.classList.contains('active')) {
+      btnImg.classList.add('disabled');
+      btnImg.textContent = 'Memproses...';
+    }
+    if (btnArt && !btnArt.classList.contains('active')) {
+      btnArt.classList.add('disabled');
+      btnArt.textContent = 'Memproses...';
+    }
+
+    let cicilan = kelompokCicilan[i];
+    let kueriFinal = SPARQL_QUERY_3_TEMPLATE.replace('<PLACEHOLDER_QIDS>', cicilan.join(' '));
+
+    try {
+      await queryWdqsThenProcess(kueriFinal, function(result) {
         let record = Records[result.siteQid.value];      
         if (!record) return; 
+        if ('image' in result && !record.imageFilename) record.imageFilename = extractImageFilename(result.image);
+        if ('wikipediaUrlTitle' in result) record.articleTitle = decodeURIComponent(result.wikipediaUrlTitle.value);
+      });
+    } catch (error) {
+      if (error === 'ABORTED') throw error;
+    }
 
-        if ('image' in result) {
-          if (!record.imageFilename) {
-            record.imageFilename = extractImageFilename(result.image);
-          }
-        }      
-        if ('wikipediaUrlTitle' in result) {
-          record.articleTitle = decodeURIComponent(result.wikipediaUrlTitle.value);
-        }
-      }
-    );
-  });
+    if (currentSearchToken !== tiketPencarianIni) break;
 
-  return Promise.all(daftarJanji);
+    // NYALAKAN LAGI TOMBOLNYA
+    if (btnImg && !btnImg.classList.contains('active')) {
+      btnImg.classList.remove('disabled');
+      btnImg.textContent = 'Memiliki Gambar';
+    }
+    if (btnArt && !btnArt.classList.contains('active')) {
+      btnArt.classList.remove('disabled');
+      btnArt.textContent = 'Memiliki Artikel';
+    }
+
+    // Hapus cache panel agar jika user mengklik bangunan, panel di-render ulang dengan gambar terbaru
+    Object.values(Records).forEach(r => r.panelElem = undefined);
+
+    // KUNCI PENTING: Hanya render ulang daftar & peta JIKA pengguna sedang menyalakan filter.
+    // Jika tidak dinyalakan, jangan di-render ulang agar HP tidak lag karena DOM thrashing.
+    if (activeFeatures.has('image') || activeFeatures.has('article')) {
+      // preventZoom = true (agar kamera peta tidak tiba-tiba me-reset posisinya saat user asyik menggeser)
+      applyIntersectionFilter(true); 
+    }
+  }
 }
 
 function populateImportantEventsData(qid) {
