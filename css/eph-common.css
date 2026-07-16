@@ -974,3 +974,6 @@ position: absolute;
   object-fit: contain; /* Memastikan gambar tidak terpotong */
   display: block;
 }
+.leaflet-popup-content img {
+  cursor: pointer;
+}
