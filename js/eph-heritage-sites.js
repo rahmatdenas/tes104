@@ -79,21 +79,6 @@ function loadPrimaryData() {
         btnAll.classList.add('active');      // Nyalakan warnanya sebagai status bawaan
       }
       
-      // =========================================================
-      // +++ KUNCI SEMENTARA TOMBOL FILTER MENGGUNAKAN CLASS +++
-      // =========================================================
-      let btnImg = document.getElementById('btn-image') || document.querySelector('[data-filter="image"]');
-      let btnArt = document.getElementById('btn-article') || document.querySelector('[data-filter="article"]');
-      
-      if (btnImg) {
-        btnImg.classList.add('disabled'); 
-        btnImg.textContent = 'Memproses...'; 
-      }
-      if (btnArt) {
-        btnArt.classList.add('disabled');
-        btnArt.textContent = 'Memproses...';
-      }
-
       // 2. Tarik gambar dan artikel secara diam-diam di latar belakang
       populateImageAndWikipediaData()
         .then(() => {
