@@ -472,7 +472,7 @@ async function populateCoordinatesData() {
   
   // STRATEGI 1: Tembak 4 kueri (4.000 data) sekaligus
   let batchSize = 4; 
-
+  let tiketPencarianIni = currentSearchToken;
   for (let i = 0; i < kelompokCicilan.length; i += batchSize) {
     if (currentSearchToken !== tiketPencarianIni) break;
     let potonganBatch = kelompokCicilan.slice(i, i + batchSize);
