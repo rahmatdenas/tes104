@@ -632,23 +632,42 @@ if (kombinasiUnik < chunkSize) {
       offset += chunkSize;
       halaman++;
     }
-  } catch (error) {
+} catch (error) {
     if (error === 'ABORTED') {
-      // +++ KUNCI PERBAIKAN: Jinakkan efek abort khusus untuk rem darurat +++
       if (window.hentikanPencarian) {
          console.log('Penarikan dipotong paksa oleh pengguna. Melanjutkan ke render peta...');
-         // JANGAN 'return;' di sini, biarkan kode meluncur ke bawah!
       } else {
          console.log('Penarikan dibatalkan sepenuhnya karena reset/URL berubah.');
-         return; // Jika murni batal karena kembali ke beranda, baru kita hentikan total
+         return; 
       }
     } else {
       console.error('Proses paginasi gagal total:', error);
-      throw error;
+      
+      // +++ KUNCI PERBAIKAN: PENYELAMATAN DATA +++
+      // Jika kegagalan terjadi ketika kita SUDAH memiliki data (Halaman 2 ke atas)
+      if (totalDataTerkumpul > 0) {
+        console.warn(`Koneksi terputus. Menyelamatkan ${totalDataTerkumpul} data yang ada...`);
+        
+        // Beri tahu pengguna bahwa tidak semua data berhasil ditarik
+        tampilkanDialog(
+          `Koneksi internet tidak stabil saat menarik sisa data.<br><br>Sistem berhasil menyelamatkan <b>${totalDataTerkumpul.toLocaleString('id-ID')}</b> data. Peta akan dibangun berdasarkan data yang berhasil ditangkap.`, 
+          "alert", 
+          "Koneksi Terputus Sebagian"
+        );
+        
+        // KUNCI: KITA TIDAK ME-THROW ERROR DI SINI!
+        // Membiarkan kode berlanjut ke postprocessCallback() di bawah, 
+        // sehingga proses akan otomatis lanjut merakit koordinat dan peta.
+        
+      } else {
+        // Jika dari awal (Halaman 1) sudah gagal, lempar error untuk memunculkan layar merah
+        throw error;
+      }
+      // ++++++++++++++++++++++++++++++++++++++++++
     }
   }
   
-  // Baris ini akan tetap dieksekusi jika loop normal, ATAU jika rem ditarik!
+  // Baris ini akan merakit sisa data yang selamat karena tidak ada 'throw' yang menghalanginya
   if (postprocessCallback) postprocessCallback();
 }
 
